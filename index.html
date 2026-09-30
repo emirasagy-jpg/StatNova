@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STAT AUTOPILOT — Демонстрационный стенд StatNova</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                            glow: '#38bdf8'
+                        },
+                        dark: {
+                            bg: '#090d16',
+                            card: '#111827',
+                            border: '#1f2937',
+                            hover: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for crisp icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            background-color: #090d16;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card {
+            background: rgba(31, 41, 55, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.25s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .glow-accent {
+            box-shadow: 0 0 25px -5px rgba(14, 165, 233, 0.3);
+        }
+
+        .glow-pulse {
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px -3px rgba(14, 165, 233, 0.2); }
+            100% { box-shadow: 0 0 30px 2px rgba(14, 165, 233, 0.4); }
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- Navigation / Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80 px-4 lg:px-8 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-sky-500/20">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-sky-300">STAT AUTOPILOT</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-medium">StatNova</span>
+                    </div>
+                    <p class="text-xs text-gray-400 hidden sm:block">AI for Official Statistics Track</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <span class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Защита проекта</span>
+                </span>
+                
+                <button onclick="toggleQrModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-medium text-gray-300 hover:text-white flex items-center space-x-2 hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-qrcode text-sky-400"></i>
+                    <span class="hidden sm:inline">QR для мобильного</span>
+                </button>
+
+                <button onclick="copyCurrentUrl()" id="copyBtn" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-lg shadow-sky-600/30 flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-link"></i>
+                    <span>Скопировать ссылку</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8 flex-grow">
+        
+        <div class="text-center max-w-3xl mx-auto space-y-4">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-950/80 text-sky-300 border border-sky-800/50 text-xs font-medium mb-1">
+                <i class="fa-solid fa-bolt text-amber-400"></i>
+                <span>Интеллектуальный мост между сырыми микроданными и решениями</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                Автопилот для микроданных <br>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-400">официальной статистики</span>
+            </h1>
+            <p class="text-gray-400 text-sm sm:text-base leading-relaxed">
+                Загрузите файл с миллионами закодированных строк (KATO, OKED, TE) — система сама выявит аномалии, найдет связи, проверит гипотезы и сгенерирует человеческий отчёт.
+            </p>
+        </div>
+
+        <!-- Interactive Video Showcase Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Video Player Box (8 Cols) -->
+            <div class="lg:col-span-8 glass-panel rounded-2xl p-4 glow-pulse relative border border-gray-800">
+                <div class="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center group shadow-2xl">
+                    <!-- HTML5 Video Player -->
+                    <video id="demoVideo" class="w-full h-full object-contain" controls preload="metadata" poster="https://placehold.co/1280x720/090d16/38bdf8?text=STAT+AUTOPILOT+Demo+Screen">
+                        <source src="Запись экрана 2026-09-30 142908.mp4" type="video/mp4">
+                        Ваш браузер не поддерживает встроенные видео.
+                    </video>
+                    
+                    <!-- Overlay fallback banner if video path isn't local -->
+                    <div id="videoErrorNotice" class="hidden absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 text-center z-10 space-y-3">
+                        <i class="fa-solid fa-circle-exclamation text-amber-400 text-4xl"></i>
+                        <h4 class="text-white font-bold">Видеофайл недоступен по локальному пути</h4>
+                        <p class="text-xs text-gray-400 max-w-md">Если ролик загружен на GitHub или Google Диск, вставьте прямое имя или URL ниже для воспроизведения:</p>
+                        <div class="flex w-full max-w-md space-x-2">
+                            <input type="text" id="videoUrlInput" placeholder="Укажите URL видео..." class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-2 flex-grow focus:outline-none focus:border-sky-500">
+                            <button onclick="changeVideoSource()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-lg">Загрузить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Status Footer -->
+                <div class="mt-3 flex flex-wrap items-center justify-between text-xs text-gray-400 px-1 gap-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                        <span class="font-medium text-gray-300">Запись работы интерфейса (55 сек)</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="document.getElementById('videoErrorNotice').classList.toggle('hidden')" class="hover:text-sky-400 transition flex items-center space-x-1">
+                            <i class="fa-solid fa-gear"></i>
+                            <span>Источник видео</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chapters & Timeline Sidebar (4 Cols) -->
+            <div class="lg:col-span-4 glass-panel rounded-2xl p-5 space-y-4 border border-gray-800">
+                <div>
+                    <h3 class="text-white font-bold text-base flex items-center space-x-2">
+                        <i class="fa-solid fa-list-ol text-sky-400"></i>
+                        <span>Навигация по видео</span>
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-1">Кликните на таймкод для перехода к нужному этапу презентации:</p>
+                </div>
+
+                <div class="space-y-2.5">
+                    <!-- Chapter 1 -->
+                    <button onclick="seekVideo(0)" class="w-full text-left p-3 rounded-xl glass-card hover:bg-sky-950/40 hover:border-sky-500/40 flex items-start space-x-3 transition group">
+                        <span class="px-2 py-1 rounded bg-sky-500/20 text-sky-400 text-xs font-mono font-bold group-hover:bg-sky-500 group-hover:text-white transition">00:00</span>
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-200 group-hover:text-sky-300">Общий профиль датасета</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5">11 934 записи, разбор структуры, проверка пропусков и типов данных.</p>
+                        </div>
+                    </button>
+
+                    <!-- Chapter 2 -->
+                    <button onclick="seekVideo(26)" class="w-full text-left p-3 rounded-xl glass-card hover:bg-sky-950/40 hover:border-sky-500/40 flex items-start space-x-3 transition group">
+                        <span class="px-2 py-1 rounded bg-sky-500/20 text-sky-400 text-xs font-mono font-bold group-hover:bg-sky-500 group-hover:text-white transition">00:26</span>
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-200 group-hover:text-sky-300">Поиск 12 сигналов</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5">Автоматическое обнаружение аномалий, нетипичных значений и корреляций.</p>
+                        </div>
+                    </button>
+
+                    <!-- Chapter 3 -->
+                    <button onclick="seekVideo(41)" class="w-full text-left p-3 rounded-xl glass-card hover:bg-sky-950/40 hover:border-sky-500/40 flex items-start space-x-3 transition group">
+                        <span class="px-2 py-1 rounded bg-sky-500/20 text-sky-400 text-xs font-mono font-bold group-hover:bg-sky-500 group-hover:text-white transition">00:41</span>
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-200 group-hover:text-sky-300">ML + ИИ-Аналитик</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5">Random Forest для факторов, текстовые ответы и готовый итоговый отчёт.</p>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="pt-2 border-t border-gray-800">
+                    <div class="p-3 rounded-xl bg-sky-950/30 border border-sky-800/30 flex items-center justify-between">
+                        <div class="text-xs">
+                            <span class="text-gray-400 block">Технологический стек:</span>
+                            <span class="font-semibold text-gray-200">Streamlit • Python • ML • OpenAI API</span>
+                        </div>
+                        <i class="fa-brands fa-python text-2xl text-sky-400/80"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Value Proposition & Key Modules Section -->
+        <div class="space-y-6 pt-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-cubes text-sky-400"></i>
+                        <span>Архитектура и возможности системы</span>
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-1">Как STAT AUTOPILOT трансформирует работу с микроданными</p>
+                </div>
+
+                <!-- Tabs header -->
+                <div class="flex rounded-xl bg-gray-900 p-1 border border-gray-800 text-xs font-medium">
+                    <button onclick="switchTab('modules')" id="tab-modules" class="tab-btn px-4 py-1.5 rounded-lg bg-sky-600 text-white shadow">Модули системы</button>
+                    <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-btn px-4 py-1.5 rounded-lg text-gray-400 hover:text-white">Сравнение с аналогами</button>
+                    <button onclick="switchTab('statai')" id="tab-statai" class="tab-btn px-4 py-1.5 rounded-lg text-gray-400 hover:text-white">Перспектива (STAT AI)</button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Modules Content -->
+            <div id="content-modules" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/20">
+                        <i class="fa-solid fa-passport"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-sm">1. Обзор & Профиль</h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        Мгновенный «паспорт» загруженного файла: количество записей, структура колонок, процент и распределение пропусков по переменным.
+                    </p>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-lg border border-emerald-500/20">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-sm">2. Поиск Сигналов</h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        Автоматический алгоритм анализирует датасет и находит выбросы, аномалии и сильные математические корреляции на простом языке.
+                    </p>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-lg border border-amber-500/20">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-sm">3. ML + Важность факторов</h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        Обучение модели Random Forest для расчета того, какие факторы оказывают наибольшее влияние на анализируемый показатель.
+                    </p>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold text-lg border border-purple-500/20">
+                        <i class="fa-solid fa-file-contract"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-sm">4. Аналитический Отчёт</h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        Автоматическая сборка структурированного черновика отчета со всеми выводами, готов для копирования в слайды и решения.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Comparison Content -->
+            <div id="content-comparison" class="hidden glass-panel p-6 rounded-2xl border border-gray-800 space-y-4">
+                <h3 class="text-sm font-bold text-white">Почему не обычный Power BI или Excel?</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-gray-400">
+                                <th class="pb-3 font-semibold">Критерий</th>
+                                <th class="pb-3 font-semibold">Традиционные инструменты (Power BI / SPSS / Excel)</th>
+                                <th class="pb-3 font-semibold text-sky-400">STAT AUTOPILOT</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800/60 text-gray-300">
+                            <tr>
+                                <td class="py-3 font-medium text-white">Входной барьер</td>
+                                <td class="py-3 text-gray-400">Нужно учиться инструменту, формулам или программированию</td>
+                                <td class="py-3 text-sky-300 font-medium">Загрузил файл $\rightarrow$ сразу видишь готовый смысл</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 font-medium text-white">Работа с кодами БНС</td>
+                                <td class="py-3 text-gray-400">Коды форм и показателей нужно расшифровывать вручную</td>
+                                <td class="py-3 text-sky-300 font-medium">Заточка под микроданные и авто-подписи понятным языком</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 font-medium text-white">Подготовка выводов</td>
+                                <td class="py-3 text-gray-400">Пользователь сам ищет зависимости и вручную пишет отчет</td>
+                                <td class="py-3 text-sky-300 font-medium">Автоматический поиск 10+ сигналов и генерация текстового отчета</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: STAT AI Content -->
+            <div id="content-statai" class="hidden glass-panel p-6 rounded-2xl border border-sky-800/40 bg-gradient-to-r from-sky-950/20 to-indigo-950/20 space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="p-2.5 rounded-xl bg-sky-500/20 text-sky-400">
+                        <i class="fa-solid fa-brain text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Следующий этап развития — STAT AI</h3>
+                        <p class="text-xs text-gray-300 mt-1">
+                            Прямой перевод запросов на естественном человеческом языке в методологические расчеты официальной статистики.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div class="p-4 rounded-xl bg-gray-900/80 border border-gray-800 space-y-2">
+                        <span class="text-[11px] text-sky-400 font-mono font-bold uppercase tracking-wider">Запрос пользователя:</span>
+                        <p class="text-xs text-gray-200 italic">«Покажи уровень занятости женщин по регионам за 2024 год и сравни с прошлым периодом»</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-gray-900/80 border border-gray-800 space-y-2">
+                        <span class="text-[11px] text-emerald-400 font-mono font-bold uppercase tracking-wider">Автоматический ответ системы:</span>
+                        <p class="text-xs text-gray-200">Система сама определяет нужные коды (KATO, GENDER, OKED), производит корректную агрегацию и формулирует резюме.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key CTA Links Box -->
+        <div class="glass-panel rounded-2xl p-6 border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h3 class="text-white font-bold text-base">Готовы протестировать STAT AUTOPILOT?</h3>
+                <p class="text-xs text-gray-400 mt-0.5">Сервис развернут и доступен для оценки членами жюри</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="https://github.com" target="_blank" class="px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-gray-200 hover:text-white hover:bg-gray-800 flex items-center space-x-2 transition">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <span>GitHub Репозиторий</span>
+                </a>
+
+                <a href="#" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-bold shadow-lg shadow-sky-500/25 flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-rocket"></i>
+                    <span>Открыть Streamlit Демо</span>
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800/60 py-6 px-4 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>© 2026 Команда StatNova • Трек AI for Official Statistics</span>
+            <div class="flex items-center space-x-4">
+                <span>STAT AUTOPILOT v1.0</span>
+                <span>•</span>
+                <span class="text-sky-400">Демонстрационный стенд</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full space-y-4 border border-gray-700 text-center relative">
+            <button onclick="toggleQrModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-white font-bold text-base">QR-код презентации</h3>
+            <p class="text-xs text-gray-400">Отсканируйте камерой смартфона для удобного просмотра видео с мобильного устройства:</p>
+            
+            <div class="p-4 bg-white rounded-xl inline-block mx-auto shadow-xl" id="qrcode"></div>
+            
+            <p class="text-[11px] text-gray-500 font-mono break-all" id="qrUrlText"></p>
+        </div>
+    </div>
+
+    <!-- Interactive Logic -->
+    <script>
+        const video = document.getElementById('demoVideo');
+
+        // Function to jump to specific timestamp in video
+        function seekVideo(seconds) {
+            if (video) {
+                video.currentTime = seconds;
+                video.play().catch(e => console.log('Autoplay prevented or video source missing:', e));
+            }
+        }
+
+        // Detect video load error to show URL input fallback option
+        video.addEventListener('error', function() {
+            document.getElementById('videoErrorNotice').classList.remove('hidden');
+        }, true);
+
+        function changeVideoSource() {
+            const url = document.getElementById('videoUrlInput').value.trim();
+            if (url) {
+                video.src = url;
+                video.load();
+                video.play();
+                document.getElementById('videoErrorNotice').classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabName) {
+            const tabs = ['modules', 'comparison', 'statai'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                
+                if (t === tabName) {
+                    btn.className = "tab-btn px-4 py-1.5 rounded-lg bg-sky-600 text-white shadow font-medium";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "tab-btn px-4 py-1.5 rounded-lg text-gray-400 hover:text-white font-medium";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function copyCurrentUrl() {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = window.location.href;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            const btn = document.getElementById('copyBtn');
+            const originalHTML = btn.innerHTML;
+            
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300"></i><span>Скопировано!</span>`;
+            btn.classList.replace('bg-sky-600', 'bg-emerald-600');
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.replace('bg-emerald-600', 'bg-sky-600');
+            }, 2500);
+        }
+
+        let qrcodeGenerated = false;
+        function toggleQrModal() {
+            const modal = document.getElementById('qrModal');
+            modal.classList.toggle('hidden');
+
+            if (!qrcodeGenerated && !modal.classList.contains('hidden')) {
+                const currentUrl = window.location.href;
+                document.getElementById('qrUrlText').innerText = currentUrl;
+                new QRCode(document.getElementById("qrcode"), {
+                    text: currentUrl,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#090d16",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                qrcodeGenerated = true;
+            }
+        }
+    </script>
+</body>
+</html>
