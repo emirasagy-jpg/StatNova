@@ -138,13 +138,16 @@
             <div class="lg:col-span-8 glass-panel rounded-2xl p-4 glow-pulse border border-gray-800">
                 <div class="relative rounded-xl overflow-hidden bg-black aspect-video shadow-2xl">
                     <video id="demoVideo" class="w-full h-full object-contain" controls preload="metadata">
-                        <source src="zapis-2026-10-09-100126_t2j0P4E7.mp4" type="video/mp4">
+                        <source src="1.mp4" type="video/mp4">
                         Ваш браузер не поддерживает видео.
                     </video>
                     <div id="videoErrorNotice" class="hidden absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-10 space-y-3">
                         <i class="fa-solid fa-circle-exclamation text-amber-400 text-4xl"></i>
-                        <h4 class="text-white font-bold">Видео не найдено по текущему пути</h4>
-                        <p class="text-xs text-gray-400 max-w-md">Укажите прямую ссылку на mp4 (GitHub raw, Google Drive, Cloudflare R2 и т.д.)</p>
+                        <h4 class="text-white font-bold">Видео не найдено</h4>
+                        <p class="text-xs text-gray-400 max-w-md">
+                            Файл <b class="text-gray-300">1.mp4</b> должен лежать в той же папке, что и этот index.html.<br>
+                            Или вставь прямую ссылку на видео ниже:
+                        </p>
                         <div class="flex w-full max-w-md space-x-2">
                             <input type="text" id="videoUrlInput" placeholder="https://.../video.mp4" class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-2 flex-grow focus:outline-none focus:border-sky-500">
                             <button onclick="changeVideoSource()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-lg">Загрузить</button>
@@ -411,23 +414,6 @@
             </div>
         </div>
 
-        <!-- CTA -->
-        <div class="glass-panel rounded-2xl p-6 border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-                <h3 class="text-white font-bold">Живое демо системы</h3>
-                <p class="text-xs text-gray-400 mt-1">Можно открыть, загрузить данные и сразу увидеть обзор, сигналы, карту и отчёт</p>
-            </div>
-            <div class="flex flex-wrap gap-3">
-                <a href="https://emirasagy-jpg.github.io/StatNova/" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold shadow-lg shadow-sky-600/30 flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-rocket"></i>
-                    <span>Открыть демо</span>
-                </a>
-                <button onclick="copyCurrentUrl()" class="px-5 py-2.5 rounded-xl glass-card text-sm font-medium text-gray-300 hover:text-white flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-share-nodes"></i>
-                    <span>Поделиться стендом</span>
-                </button>
-            </div>
-        </div>
     </main>
 
     <!-- Footer -->
